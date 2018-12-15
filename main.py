@@ -5,6 +5,7 @@ import shutil
 import os
 
 
+#TODO IF IMAGES ARE UP, GO TO NEXT PAGE, COMBINE TITLE AND PRICE, PLACE NAMES IN SET
 
 def start():
     # get room links

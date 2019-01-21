@@ -2,14 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 import numpy as np
 import sqlite3
-
+import time
 
 def room_scraper(conn, c):
-    page = 1
-    while page !=3:
-        site = ''
+    page = 30
+    site = ''
+    while True:
+
         try:
-            html = requests.get('https://www.ebay-kleinanzeigen.de/s-berlin/anbieter:privat/anzeige:angebote/preis:100:650/{}zimmer/k0l3331'
+            html = requests.get('https://www.ebay-kleinanzeigen.de/s-immobilien/berlin/anbieter:privat/'
+                                'anzeige:angebote/preis:200:900/{}zimmer/k0c195l3331'
                                 .format(site))
             print(html)
         except:
@@ -23,6 +25,7 @@ def room_scraper(conn, c):
             print('cannot find ads')
             break
 
+        temp = []  # temp file to compare against duplicates
         for i in article:
             features = []
             priceloc = i.find('div', class_='aditem-details')
@@ -35,13 +38,23 @@ def room_scraper(conn, c):
                 print('EMPTY VALUE')
                 sizem.extend([None, None, None, None])
             features.extend(sizem)
-            features = np.delete(features, (1, 4, 6))
+            # print(features)
+            features[1] = int(features[1])
 
+            if features[1] in temp: # skip duplicates
+                continue
+            temp.append(features[1])
+            print(features)
+            features = np.delete(features, (1, 4, 6))
+            # print(features)
             c.execute("INSERT INTO rooms VALUES (:price, :location, :rooms, :square)",
                       {'price': features[0], 'location': features[1], 'rooms': features[2], 'square': features[3]})
             conn.commit()
 
-        page =+1
+        print(f'scraping on page {page}')
+        time.sleep(1)
+        # page += 1
+
         site = 'seite:{}/'.format(page)
 
 
@@ -56,6 +69,7 @@ def database():
                 square INT
                 )""")
     return conn, c
+
 
 database()
 room_scraper(*database())

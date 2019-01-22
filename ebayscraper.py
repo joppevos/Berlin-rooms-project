@@ -1,21 +1,24 @@
 import requests
 from bs4 import BeautifulSoup
-import numpy as np
 import sqlite3
 import time
 
-def room_scraper(conn, c):
-    page = 30
-    site = ''
-    while True:
 
+def room_scraper(conn, c):
+    page = 1
+    sitepage = ''
+    while True:
         try:
             html = requests.get('https://www.ebay-kleinanzeigen.de/s-immobilien/berlin/anbieter:privat/'
                                 'anzeige:angebote/preis:200:900/{}zimmer/k0c195l3331'
-                                .format(site))
+                                .format(sitepage))
             print(html)
         except:
             print('invalid request')
+            break
+
+        if f'seite:{page}' not in html.url and sitepage is not '':
+            print('end of pages')
             break
 
         soup = BeautifulSoup(html.content, 'html.parser')
@@ -25,37 +28,42 @@ def room_scraper(conn, c):
             print('cannot find ads')
             break
 
-        temp = []  # temp file to compare against duplicates
+        ads = {}
         for i in article:
-            features = []
-            priceloc = i.find('div', class_='aditem-details')
-            priceloc = ((priceloc.text).replace(' ', '').replace('€', '').replace('VB', '')).split() # remove spaces, split in list
-            features.extend(priceloc)
-
             sizem = i.find('p', class_='text-module-end')
-            sizem = sizem.text.split()
-            if sizem == []:
-                print('EMPTY VALUE')
-                sizem.extend([None, None, None, None])
-            features.extend(sizem)
-            # print(features)
-            features[1] = int(features[1])
+            sizem = sizem.text.replace(' ', '').split()
+            # check for square and room count
+            if len(sizem) == 2:
+                ads['rooms'] = sizem[0]
+                ads['square'] = sizem[1]
+            elif sizem == []:
+                ads['rooms'] = ''
+                ads['square'] = ''
+            elif 'Zimmer' in sizem[0]:
+                ads['rooms'] = sizem[0]
+                ads['square'] = ''
+            else:
+                ads['square'] = sizem[0]
+                ads['rooms'] = ''
 
-            if features[1] in temp: # skip duplicates
-                continue
-            temp.append(features[1])
-            print(features)
-            features = np.delete(features, (1, 4, 6))
-            # print(features)
+            ads = {k: v.replace('Zimmer', '').replace('m²', '') for k, v in ads.items()}
+
+            priceloc = i.find('div', class_='aditem-details')
+            priceloc = ((priceloc.text).replace(' ', '').replace('€', '').replace('VB', '')).split()
+            ads['price'] = priceloc[0]
+            ads['location'] = priceloc[2]
+
             c.execute("INSERT INTO rooms VALUES (:price, :location, :rooms, :square)",
-                      {'price': features[0], 'location': features[1], 'rooms': features[2], 'square': features[3]})
+                      {'price': ads['price'], 'location': ads['location'],
+                       'rooms': ads['rooms'], 'square': ads['square']})
             conn.commit()
+            print(ads)
 
-        print(f'scraping on page {page}')
-        time.sleep(1)
-        # page += 1
+        print(f'Scraping page {page}')
+        time.sleep(0.3)
+        page += 1
 
-        site = 'seite:{}/'.format(page)
+        sitepage = 'seite:{}/'.format(page)
 
 
 def database():
@@ -63,10 +71,10 @@ def database():
     c = conn.cursor()
     c.execute("DROP TABLE rooms")
     c.execute("""CREATE TABLE rooms(
-                price INT,
-                location INT,
-                rooms INT,
-                square INT
+                price,
+                location TEXT, 
+                rooms,
+                square 
                 )""")
     return conn, c
 

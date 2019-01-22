@@ -28,10 +28,10 @@ def room_scraper(conn, c):
             print('cannot find ads')
             break
 
-        ads = {}
         for i in article:
+            ads = {}
             sizem = i.find('p', class_='text-module-end')
-            sizem = sizem.text.replace(' ', '').split()
+            sizem = sizem.text.replace(' ', '').replace(',', '.').split()
             # check for square and room count
             if len(sizem) == 2:
                 ads['rooms'] = sizem[0]
@@ -47,17 +47,18 @@ def room_scraper(conn, c):
                 ads['rooms'] = ''
 
             ads = {k: v.replace('Zimmer', '').replace('m²', '') for k, v in ads.items()}
-
             priceloc = i.find('div', class_='aditem-details')
             priceloc = ((priceloc.text).replace(' ', '').replace('€', '').replace('VB', '')).split()
             ads['price'] = priceloc[0]
             ads['location'] = priceloc[2]
 
-            c.execute("INSERT INTO rooms VALUES (:price, :location, :rooms, :square)",
-                      {'price': ads['price'], 'location': ads['location'],
-                       'rooms': ads['rooms'], 'square': ads['square']})
-            conn.commit()
+            ads = {k: parse_int(v) for k, v in ads.items()}
             print(ads)
+
+            c.execute("INSERT INTO rooms VALUES (:price, :location, :rooms, :square)",
+                      {'price': (ads['price']), 'location': ads['location'],
+                       'rooms': (ads['rooms']), 'square': (ads['square'])})
+            conn.commit()
 
         print(f'Scraping page {page}')
         time.sleep(0.3)
@@ -77,6 +78,14 @@ def database():
                 square 
                 )""")
     return conn, c
+
+
+def parse_int(val):
+    # converts strings to int
+    try:
+        return int(round(float(val)))
+    except ValueError:
+        return val
 
 
 database()

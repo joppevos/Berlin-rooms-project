@@ -61,6 +61,8 @@ def room_scraper(conn, c):
             conn.commit()
 
         print(f'Scraping page {page}')
+        print('price is dtype', type(ads['rooms']))
+        print('price is dtype', type(ads['price']))
         time.sleep(0.3)
         page += 1
 

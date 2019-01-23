@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 import time
+import re
 
 
 def room_scraper(conn, c):
@@ -10,7 +11,7 @@ def room_scraper(conn, c):
     while True:
         try:
             html = requests.get('https://www.ebay-kleinanzeigen.de/s-immobilien/berlin/anbieter:privat/'
-                                'anzeige:angebote/preis:200:900/{}zimmer/k0c195l3331'
+                                'anzeige:angebote/preis:200:1200/{}zimmer/k0c195l3331'
                                 .format(sitepage))
             print(html)
         except:
@@ -33,26 +34,28 @@ def room_scraper(conn, c):
             sizem = i.find('p', class_='text-module-end')
             sizem = sizem.text.replace(' ', '').replace(',', '.').split()
             # check for square and room count
-            if len(sizem) == 2:
-                ads['rooms'] = sizem[0]
-                ads['square'] = sizem[1]
-            elif sizem == []:
-                ads['rooms'] = ''
-                ads['square'] = ''
-            elif 'Zimmer' in sizem[0]:
-                ads['rooms'] = sizem[0]
-                ads['square'] = ''
-            else:
-                ads['square'] = sizem[0]
-                ads['rooms'] = ''
+            try:
+                if len(sizem) == 2:
+                    ads['rooms'] = int(float(sizem[0].replace('Zimmer', '')))
+                    ads['square'] = int(float(sizem[1].replace('m²', '')))
+                elif sizem == []:
+                    ads['rooms'] = None
+                    ads['square'] = None
+                elif 'Zimmer' in sizem[0]:
+                    ads['rooms'] = int(float(sizem[0].replace('Zimmer', '')))
+                    ads['square'] = None
+                else:
+                    ads['square'] = int(float(sizem[0].replace('m²', '')))
+                    ads['rooms'] = None
+            except ValueError:
+                continue
 
-            ads = {k: v.replace('Zimmer', '').replace('m²', '') for k, v in ads.items()}
+
             priceloc = i.find('div', class_='aditem-details')
             priceloc = ((priceloc.text).replace(' ', '').replace('€', '').replace('VB', '')).split()
-            ads['price'] = priceloc[0]
+            ads['price'] = int(priceloc[0].replace('.', ''))
             ads['location'] = priceloc[2]
 
-            ads = {k: parse_int(v) for k, v in ads.items()}
             print(ads)
 
             c.execute("INSERT INTO rooms VALUES (:price, :location, :rooms, :square)",
@@ -61,8 +64,6 @@ def room_scraper(conn, c):
             conn.commit()
 
         print(f'Scraping page {page}')
-        print('price is dtype', type(ads['rooms']))
-        print('price is dtype', type(ads['price']))
         time.sleep(0.3)
         page += 1
 
@@ -74,20 +75,13 @@ def database():
     c = conn.cursor()
     c.execute("DROP TABLE rooms")
     c.execute("""CREATE TABLE rooms(
-                price,
+                price INT,
                 location TEXT, 
-                rooms,
-                square 
+                rooms INT,
+                square INT 
                 )""")
     return conn, c
 
-
-def parse_int(val):
-    # converts strings to int
-    try:
-        return int(round(float(val)))
-    except ValueError:
-        return val
 
 
 database()

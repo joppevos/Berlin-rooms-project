@@ -73,7 +73,7 @@ def room_scraper(conn, c):
 def database():
     conn = sqlite3.connect('ebay-rooms.db')
     c = conn.cursor()
-    c.execute("DROP TABLE rooms")
+    # c.execute("DROP TABLE rooms")
     c.execute("""CREATE TABLE rooms(
                 price INT,
                 location TEXT, 

@@ -2,8 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 import time
-import re
-
+import os
 
 def room_scraper(conn, c):
     page = 1
@@ -13,7 +12,7 @@ def room_scraper(conn, c):
             html = requests.get('https://www.ebay-kleinanzeigen.de/s-immobilien/berlin/anbieter:privat/'
                                 'anzeige:angebote/preis:200:1200/{}zimmer/k0c195l3331'
                                 .format(sitepage))
-            print(html)
+            # print(html)
         except:
             print('invalid request')
             break
@@ -30,10 +29,26 @@ def room_scraper(conn, c):
             break
 
         for i in article:
+            """
+            search the room article for features
+            locates and add to dict 'ads'
+            commit dict to sqlite db
+            """
             ads = {}
+            title = i.find('h2', class_='text-module-begin')
+            tag = title.find('a')['href']
+            tag = int(os.path.basename(tag).replace('-', ''))
+            # break
+            ads['ID'] = tag
+
+            priceloc = i.find('div', class_='aditem-details')
+            priceloc = ((priceloc.text).replace(' ', '').replace('€', '').replace('VB', '')).split()
+            ads['price'] = int(priceloc[0].replace('.', ''))
+            ads['location'] = priceloc[2]
+
             sizem = i.find('p', class_='text-module-end')
             sizem = sizem.text.replace(' ', '').replace(',', '.').split()
-            # check for square and room count
+
             try:
                 if len(sizem) == 2:
                     ads['rooms'] = int(float(sizem[0].replace('Zimmer', '')))
@@ -48,20 +63,10 @@ def room_scraper(conn, c):
                     ads['square'] = int(float(sizem[0].replace('m²', '')))
                     ads['rooms'] = None
             except ValueError:
+                # except mistakes in returned scrape
                 continue
 
-
-            priceloc = i.find('div', class_='aditem-details')
-            priceloc = ((priceloc.text).replace(' ', '').replace('€', '').replace('VB', '')).split()
-            ads['price'] = int(priceloc[0].replace('.', ''))
-            ads['location'] = priceloc[2]
-
-            print(ads)
-
-            c.execute("INSERT INTO rooms VALUES (:price, :location, :rooms, :square)",
-                      {'price': (ads['price']), 'location': ads['location'],
-                       'rooms': (ads['rooms']), 'square': (ads['square'])})
-            conn.commit()
+            db_commit(conn, c, ads)
 
         print(f'Scraping page {page}')
         time.sleep(0.3)
@@ -70,19 +75,33 @@ def room_scraper(conn, c):
         sitepage = 'seite:{}/'.format(page)
 
 
-def database():
-    conn = sqlite3.connect('ebay-rooms.db')
+def db_connect():
+    conn = sqlite3.connect('ebayrooms.db')
     c = conn.cursor()
-    # c.execute("DROP TABLE rooms")
-    c.execute("""CREATE TABLE rooms(
-                price INT,
-                location TEXT, 
-                rooms INT,
-                square INT 
-                )""")
+    try:
+        c.execute("""CREATE TABLE rooms(
+                        price INT,
+                        location TEXT,
+                        rooms INT,
+                        square INT,
+                        ID INTEGER PRIMARY KEY
+                        )""")
+    except sqlite3.OperationalError:
+        print('table already exists')
     return conn, c
 
 
+def db_commit(conn, c, ads):
+    try:
+        c.execute("INSERT INTO rooms VALUES (:price, :location, :rooms, :square, :ID)",
+                  {'price': (ads['price']), 'location': ads['location'],
+                   'rooms': (ads['rooms']), 'square': (ads['square']), 'ID': ads['ID']})
 
-database()
-room_scraper(*database())
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print('UNIQUE constraint failed')
+        pass
+
+
+db_connect()
+room_scraper(*db_connect())

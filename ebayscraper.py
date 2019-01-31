@@ -1,8 +1,10 @@
+#!/usr/bin/python
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
 import time
 import os
+
 
 def room_scraper(conn, c):
     page = 1
@@ -10,7 +12,7 @@ def room_scraper(conn, c):
     while True:
         try:
             html = requests.get('https://www.ebay-kleinanzeigen.de/s-immobilien/berlin/anbieter:privat/'
-                                'anzeige:angebote/preis:200:1200/{}zimmer/k0c195l3331'
+                                'anzeige:angebote/preis:200:1500/{}zimmer/k0c195l3331'
                                 .format(sitepage))
             # print(html)
         except:
@@ -98,6 +100,7 @@ def db_commit(conn, c, ads):
                    'rooms': (ads['rooms']), 'square': (ads['square']), 'ID': ads['ID']})
 
         conn.commit()
+        print('new room added')
     except sqlite3.IntegrityError:
         print('UNIQUE constraint failed')
         pass

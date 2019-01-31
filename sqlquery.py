@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 
-db = sqlite3.connect('ebay-rooms.db')
+db = sqlite3.connect('ebayrooms.db')
 
 def run_query(query):
     return pd.read_sql_query(query, db)

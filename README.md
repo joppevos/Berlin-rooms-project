@@ -1,6 +1,6 @@
 # Berlin room pricing
 
-* [Link to Jupyter Notebook](https://nbviewer.jupyter.org/github/joppevos/zimmer-scraper/blob/master/zimmer_scraper.ipynb)
+* [Link to Jupyter Notebook](https://nbviewer.jupyter.org/github/joppevos/Berlin-rooms-project/blob/master/Price_exploration.ipynb)
 
 ## Project Intro/Objective
 The purpose of this project is to get insight in the current market of Berlin rooms.

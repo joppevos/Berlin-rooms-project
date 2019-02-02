@@ -4,8 +4,7 @@
 
 ## Project Intro/Objective
 The purpose of this project is to get insight in the current market of Berlin rooms.
-Real-estate pricing in Berlin has increased extremely since the last years and the current information is not up-to-date.
-Since I just moved to Berlin and have to find a room, this will help me and other students.
+Real-estate pricing in Berlin has increased extremely since the last years and the room pricing found online is not up-to-date. I just moved to Berlin and have to find a room, this will help me and other students.
 
 ### Methods Used
 * Data mining

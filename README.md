@@ -26,11 +26,3 @@ The rooms data comes from ebay-kleinanzeigen.de, one of the biggest private hous
 Some question I had before starting. 
 - What the price per square meter is for each area.
 - Most affordable area to live for students
-
-
-
-## Featured Notebooks/Analysis/Deliverables
-* [Notebook/Markdown/Slide Deck Title](link)
-* [Notebook/Markdown/Slide DeckTitle](link)
-* [Blog Post](link)
-

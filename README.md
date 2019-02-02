@@ -1,7 +1,5 @@
 # Berlin room pricing
 
-#### Featured Notebooks/Analysis/Deliverables
-link to Jupyter Notebook
 * [Link to Notebook](https://nbviewer.jupyter.org/github/joppevos/zimmer-scraper/blob/master/zimmer_scraper.ipynb)
 
 ## Project Intro/Objective

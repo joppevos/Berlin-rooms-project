@@ -2,7 +2,7 @@
 
 #### Featured Notebooks/Analysis/Deliverables
 link to Jupyter Notebook
-* [https://nbviewer.jupyter.org/github/joppevos/zimmer-scraper/blob/master/zimmer_scraper.ipynb](link)
+* [https://nbviewer.jupyter.org/github/joppevos/zimmer-scraper/blob/master/zimmer_scraper.ipynb]
 
 ## Project Intro/Objective
 The purpose of this project is to get insight in the current market of Berlin rooms.

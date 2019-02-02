@@ -19,18 +19,10 @@ Since I just moved to Berlin and have to find a room, this will help me and othe
 * Sqlite
 * jupyter
 * Seaborn, Matplot, Plotly
+* Sklearn
 
 ## Project Description
-(Provide more detailed overview of the project.  
 The rooms data comes from ebay-kleinanzeigen.de, one of the biggest private house markets. Multiple features are scraped straight from advertisments for the duration of 1 week. 
 Some question I had before starting. 
 - What the price per square meter is for each area.
 - Most affordable area to live for students
-
-
-
-## Featured Notebooks/Analysis/Deliverables
-* [Notebook/Markdown/Slide Deck Title](link)
-* [Notebook/Markdown/Slide DeckTitle](link)
-* [Blog Post](link)
-

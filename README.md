@@ -1,5 +1,5 @@
 # Berlin room pricing
-(view notebook from the link, not in the repository. Git does not load interactive plots)
+(view the notebook from the link below, not in the repository. Git does not load interactive plots)
 * [Link to Jupyter Notebook](https://nbviewer.jupyter.org/github/joppevos/Berlin-rooms-project/blob/master/Price_exploration.ipynb)
 
 ## Project Intro/Objective
